@@ -1,5 +1,7 @@
 config:
+  debug-mode: false
   time-between-actions: 40 #In ticks, the time between the plugin actions.
+  time-format: "&7%d &edays, &7%d &ehours, &7%d &eminutes, &7%d &eseconds"
 timezone:
   #Use the timezone where your server is hosted in.
   use-server-timezone: true
@@ -13,15 +15,15 @@ worlds: #List of worlds.
     backup: nether_backup
     prev_reset_commands: #commands to execute before the reset.
       - "[BROADCAST] &b&lHORIZON &bThe nether world is about to reset."
-      - "[PLAYERS] spawn" # [PLAYERS] Will execute a command as all players in the world.
+      - "[PLAYERS] spawn" # [PLAYERS] Will execute a command as all players inside the world.
     after_reset_commands: #commands to execute after the reset.
       - ""
     warnings: 1h, 30m, 10m, 5m, 1m #warnings before the world reset.
     warnings_message: "&b&lHORIZON &bThe nether world is about to reset in $time."
     times:
       1: #1 (Monday) to 7 (Sunday).
-        hour: 21:14 #24-hour format.
+        hour: "21:14" #24-hour format.
       3:
-        hour: 18:05
+        hour: "18:05"
       6:
-        hour: 03:40
+        hour: "03:40"

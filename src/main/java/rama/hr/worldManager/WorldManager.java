@@ -7,6 +7,7 @@ import org.bukkit.WorldCreator;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitScheduler;
+import rama.hr.chronMain.Chron;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +34,7 @@ public class WorldManager {
     int d;
     int e;
     int f;
+    int g;
 
 
     public void loadWorlds(FileConfiguration config) throws IOException {
@@ -70,8 +72,9 @@ public class WorldManager {
                 consoleLogger("&4[ERROR] &cTimes is empty, skipping configuration &f" + world + "&c.", false);
                 continue;
             }
-
-            horizonWorlds.add(new HorizonWorld(resetWorld, backupWorld, prevCommands, afterCommands, warnings, warningsMessage, times));
+            HorizonWorld horizonWorld = new HorizonWorld(resetWorld, backupWorld, prevCommands, afterCommands, warnings, warningsMessage, times);
+            horizonWorlds.add(horizonWorld);
+            horizonWorld.buildChrons();
             count += 1;
         }
 
@@ -86,13 +89,14 @@ public class WorldManager {
         int delay = config.getInt("config.time-between-actions");
         BukkitScheduler s = Bukkit.getScheduler();
         String world_name = horizonWorld.resetWorld.getName();
+
         consoleLogger("&eResetting world &f" + world_name, false);
         consoleLogger(" ", false);
         consoleLogger("&eProgress: [&f----------&e] &f0%", false);
 
         //Execute prev commands
         a = s.runTaskLater(plugin, () -> {
-            executeCommands(horizonWorld.prevCommands, world_name);
+            executeCommands(horizonWorld.prevCommands, world_name, true);
         }, 0).getTaskId();
 
 
@@ -131,14 +135,21 @@ public class WorldManager {
             createWorld(world_name, horizonWorld.resetWorld.getEnvironment());
             }, delay * 4L).getTaskId();
 
+        //Execute after commands
+        g = s.runTaskLater(plugin, () -> {
+            executeCommands(horizonWorld.afterCommands, world_name, false);
+        }, delay * 5L).getTaskId();
+
 
         f = s.runTaskLater(plugin, () -> {
             consoleLogger("&e&3------------[&6World Reset&3]------------", false);
             },  delay * 5L).getTaskId();
     }
 
-    private void executeCommands(List<String> commands, String world_name) {
-        consoleLogger("&eProgress: [&f#---------&e] &f10%", false);
+    private void executeCommands(List<String> commands, String world_name, Boolean b) {
+        if(b){
+            consoleLogger("&eProgress: [&f#---------&e] &f10%", false);
+        }
         for (String cmd : commands) {
             if (cmd.contains("[BROADCAST]")) {
                 cmd = cmd.replace("[BROADCAST] ", "");
@@ -152,7 +163,9 @@ public class WorldManager {
                 Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), cmd);
             }
         }
-        consoleLogger("&eProgress: [&f##--------&e] &f20%", false);
+        if(b) {
+            consoleLogger("&eProgress: [&f##--------&e] &f20%", false);
+        }
     }
 
     private void unloadWorld(String world) {
@@ -171,6 +184,7 @@ public class WorldManager {
             bukkitScheduler.cancelTask(d);
             bukkitScheduler.cancelTask(e);
             bukkitScheduler.cancelTask(f);
+            bukkitScheduler.cancelTask(g);
         }
     }
 
@@ -223,5 +237,21 @@ public class WorldManager {
 
     public List<HorizonWorld> getHorizonWorlds(){
         return horizonWorlds;
+    }
+
+    public Boolean startChrons(){
+        boolean b = false;
+        for(HorizonWorld hw : horizonWorlds){
+            consoleLogger(colorized("&eStarting chrons for world &f" + hw.getWorldName()), false);
+            consoleLogger(" ", false);
+            for(Chron c : hw.getChrons()){
+                c.start();
+            }
+            if(debug) {
+                consoleLogger(" ", false);
+            }
+            b = true;
+        }
+        return b;
     }
 }
