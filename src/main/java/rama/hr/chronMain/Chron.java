@@ -32,6 +32,7 @@ public class Chron {
     }
 
     public void start(){
+        chronWorld.startWarnings(this);
         BukkitScheduler scheduler = Bukkit.getScheduler();
         scheduler.runTaskLater(plugin, () -> {
 
