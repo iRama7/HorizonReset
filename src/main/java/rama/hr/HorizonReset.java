@@ -24,6 +24,7 @@ public final class HorizonReset extends JavaPlugin {
 
     public static boolean debug = false;
 
+
     @Override
     public void onEnable() {
         this.saveDefaultConfig();

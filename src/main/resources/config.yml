@@ -11,6 +11,9 @@ config:
     hours: "&ehours"
     day: "&eday"
     days: "&edays"
+  reset_teleport:
+    enable: true
+    location: #Do not manually edit, set with /hr setTeleport
 
 timezone:
   #Use the timezone where your server is hosted in.
@@ -23,17 +26,22 @@ worlds: #List of worlds.
     world: world_nether
     #Backup folder name inside backups folder.
     backup: nether_backup
+    #World environment.
+    environment: NETHER #NORMAL, NETHER, THE_END
     prev_reset_commands: #commands to execute before the reset.
       - "[BROADCAST] &b&lHORIZON &bThe nether world is about to reset."
       - "[PLAYERS] spawn" # [PLAYERS] Will execute a command as all players inside the world.
     after_reset_commands: #commands to execute after the reset.
       - ""
     warnings: 1h, 30m, 10m, 5m, 1m, 10s, 5s, 4s, 3s, 2s, 1s #warnings before the world reset.
-    warnings_message: "&b&lHORIZON &bThe nether world is about to reset in $time&b."
+    warnings_message: "&b&lHORIZON &bThe nether world is about to reset in &e$time&b."
     times:
-      1: #1 (Monday) to 7 (Sunday).
+      1:
+        day: 1 #1 (Monday) to 7 (Sunday).
         hour: "21:14" #24-hour format.
-      3:
+      2:
+        day: 3
         hour: "18:05"
-      6:
+      3:
+        day: 6
         hour: "03:40"

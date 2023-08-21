@@ -2,6 +2,7 @@ package rama.hr.worldManager;
 
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -12,7 +13,6 @@ import rama.hr.chronMain.Chron;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import static rama.hr.HorizonReset.*;
@@ -21,7 +21,7 @@ import static rama.hr.HorizonReset.*;
 public class WorldManager {
 
 
-    List<HorizonWorld> horizonWorlds = new ArrayList<>();
+    List<HorizonWorld> horizonWorlds;
 
     Long startTime;
     Long finishTime;
@@ -40,6 +40,8 @@ public class WorldManager {
     public void loadWorlds(FileConfiguration config) throws IOException {
 
         consoleLogger("&eLoading worlds...", false);
+
+        horizonWorlds = new ArrayList<>();
 
         int count = 0;
         for (String world : config.getConfigurationSection("worlds").getKeys(false)) {
@@ -63,16 +65,17 @@ public class WorldManager {
 
             String warningsMessage = config.getString("worlds." + world + ".warnings_message");
 
-            HashMap<Integer, String> times = new HashMap<>();
-            for (String day : config.getConfigurationSection("worlds." + world + ".times").getKeys(false)) {
-                String hour = config.getString("worlds." + world + ".times." + day + ".hour");
-                times.put(Integer.valueOf(day), hour);
-            }
+            int i = Integer.parseInt(world);
+
+            List<String> times = new ArrayList<>(config.getConfigurationSection("worlds." + world + ".times").getKeys(false));
             if (times.isEmpty()) {
                 consoleLogger("&4[ERROR] &cTimes is empty, skipping configuration &f" + world + "&c.", false);
                 continue;
             }
-            HorizonWorld horizonWorld = new HorizonWorld(resetWorld, backupWorld, prevCommands, afterCommands, warnings, warningsMessage, times);
+
+            World.Environment worldEnvironment = World.Environment.valueOf(config.getString("worlds." + world + ".environment"));
+
+            HorizonWorld horizonWorld = new HorizonWorld(resetWorld, backupWorld, prevCommands, afterCommands, warnings, warningsMessage, times, i, worldEnvironment);
             horizonWorlds.add(horizonWorld);
             horizonWorld.buildChrons();
             count += 1;
@@ -170,6 +173,12 @@ public class WorldManager {
 
     private void unloadWorld(String world) {
         consoleLogger("&eProgress: [&f###-------&e] &f30%", false);
+        if(plugin.getConfig().getBoolean("config.reset_teleport.enable")) {
+            Location l = plugin.getConfig().getLocation("config.reset_teleport.location");
+            for (Player p : Bukkit.getWorld(world).getPlayers()) {
+                p.teleport(l);
+            }
+        }
         if(!Bukkit.getWorld(world).getPlayers().isEmpty()){
             consoleLogger("&e[WARNING] &eThere are still players in the world &f" + world + "&e.", false);
         }
@@ -239,8 +248,7 @@ public class WorldManager {
         return horizonWorlds;
     }
 
-    public Boolean startChrons(){
-        boolean b = false;
+    public void startChrons(){
         for(HorizonWorld hw : horizonWorlds){
             consoleLogger(colorized("&eStarting chrons for world &f" + hw.getWorldName()), false);
             consoleLogger(" ", false);
@@ -250,8 +258,6 @@ public class WorldManager {
             if(debug) {
                 consoleLogger(" ", false);
             }
-            b = true;
         }
-        return b;
     }
 }

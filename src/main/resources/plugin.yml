@@ -1,0 +1,10 @@
+name: HorizonReset
+version: '${project.version}'
+main: rama.hr.HorizonReset
+softdepend: [ PlaceHolderAPI ]
+authors: [ ImRama ]
+api-version: 1.14
+description: Reset worlds from designated folders.
+commands:
+  hr:
+    aliases: ["horizonreset"]
