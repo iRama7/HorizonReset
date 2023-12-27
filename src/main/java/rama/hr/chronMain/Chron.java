@@ -1,5 +1,10 @@
 package rama.hr.chronMain;
 
+import com.cronutils.model.Cron;
+import com.cronutils.model.CronType;
+import com.cronutils.model.definition.CronDefinitionBuilder;
+import com.cronutils.model.time.ExecutionTime;
+import com.cronutils.parser.CronParser;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
@@ -17,24 +22,18 @@ import static rama.hr.HorizonReset.*;
 
 public class Chron {
 
-    int day;
-    int hour;
-    int minutes;
+    Cron cron;
     HorizonWorld chronWorld;
     WorldManager worldManager = new WorldManager();
     BukkitTask task;
     TimeZone timeZone;
 
 
-    public Chron(int day,
-                 int hour,
-                 int minutes,
+    public Chron(String cronSyntax,
                  HorizonWorld chronWorld,
                  TimeZone timeZone){
-
-        this.day = day;
-        this.hour = hour;
-        this.minutes = minutes;
+        CronParser parser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.UNIX));
+        this.cron = parser.parse(cronSyntax);
         this.chronWorld = chronWorld;
         this.timeZone = timeZone;
     }
@@ -49,29 +48,26 @@ public class Chron {
             //Restart chron
             start();
 
-        }, ((getTimeUntil(DayOfWeek.of(day), hour, minutes)) / 1000) * 20);
+        }, ((getTimeUntil() / 1000) * 20));
         if(debug) {
-            consoleLogger("&eStarting chron for &f" + chronWorld.getWorldName() + "&e with time &f" + timeFormatted((getTimeUntil(DayOfWeek.of(day), hour, minutes))), false);
+            consoleLogger("&eStarting chron for &f" + chronWorld.getWorldName() + "&e with time &f" + timeFormatted((getTimeUntil())), false);
         }
     }
 
     public Long nextExec(){
-        return getTimeUntil(DayOfWeek.of(day), hour, minutes);
+        return getTimeUntil();
     }
 
-    public Long getTimeUntil(DayOfWeek day, int hour, int minutes){
-        LocalDateTime now = LocalDateTime.now();
+    private Long getTimeUntil(){
 
-        now = convertToTimeZone(now, timeZone.toZoneId());
+        ZonedDateTime now = convertToTimeZone(LocalDateTime.now(), timeZone.toZoneId());
 
-        LocalDateTime targetDateTime = now.with(DayOfWeek.from(day)).withHour(hour).withMinute(minutes).withSecond(0).withNano(0);
+        ExecutionTime executionTime = ExecutionTime.forCron(cron);
 
-        if(targetDateTime.isBefore(now)){
-            targetDateTime = targetDateTime.plusWeeks(1); //Sumar una semana si el día ya paso
-        }
+        ZonedDateTime nextExecution = (executionTime.nextExecution(now).get());
 
 
-        long timeUntil = ChronoUnit.MILLIS.between( now, targetDateTime);
+        long timeUntil = ChronoUnit.MILLIS.between(now, nextExecution);
         return timeUntil + 1000;
     }
 
@@ -79,12 +75,12 @@ public class Chron {
         task.cancel();
     }
 
-    public static LocalDateTime convertToTimeZone(LocalDateTime localDateTime, ZoneId targetZoneId) {
+    private ZonedDateTime convertToTimeZone(LocalDateTime localDateTime, ZoneId targetZoneId) {
         ZoneId sourceZoneId = ZoneId.systemDefault();
         ZonedDateTime sourceZonedDateTime = localDateTime.atZone(sourceZoneId);
-        ZonedDateTime targetZonedDateTime = sourceZonedDateTime.withZoneSameInstant(targetZoneId);
-        return targetZonedDateTime.toLocalDateTime();
+        return sourceZonedDateTime.withZoneSameInstant(targetZoneId);
     }
+
 
 
 }

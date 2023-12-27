@@ -60,11 +60,8 @@ public class HorizonWorld {
         }
         for(String time : times){
             FileConfiguration config = plugin.getConfig();
-            String[] hourString = config.getString("worlds." + this.i + ".times." + time + ".hour").split(":");
-            int hour = Integer.parseInt(hourString[0]);
-            int minutes = Integer.parseInt(hourString[1]);
-            int day = Integer.parseInt(config.getString("worlds." + this.i + ".times." + time + ".day"));
-            Chron chron = new Chron(day, hour, minutes, this, timeZone);
+            String cronExpression = config.getString("worlds." + this.i + ".times." + time + ".expression");
+            Chron chron = new Chron(cronExpression, this, timeZone);
             chrons.add(chron);
             count+=1;
         }

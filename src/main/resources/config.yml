@@ -1,6 +1,6 @@
 config:
   debug-mode: false
-  time-between-actions: 40 #In ticks, the time between the plugin actions.
+  time-between-actions: 20 #In ticks, the time between the plugin actions.
   time-format: "&7%d &edays, &7%d &ehours, &7%d &eminutes, &7%d &eseconds"
   times-language:
     second: "&esecond"
@@ -37,11 +37,8 @@ worlds: #List of worlds.
     warnings_message: "&b&lHORIZON &bThe nether world is about to reset in &e$time&b."
     times:
       1:
-        day: 1 #1 (Monday) to 7 (Sunday).
-        hour: "21:14" #24-hour format.
+        expression: "5 0 * 8 *"
       2:
-        day: 3
-        hour: "18:05"
+        expression: "5 0 * 8 *"
       3:
-        day: 6
-        hour: "03:40"
+        expression: "5 0 * 8 *"
